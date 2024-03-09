@@ -21,16 +21,22 @@
 
 (defn add-vec [[x1 y1] [x2 y2]]
   ;; COMPLETE (Ex 2.46)
+    [(+ x1 x2)  (+ y1 y2)]
  )
 
 (defn sub-vec [[x1 y1] [x2 y2]]
   ;; COMPLETE
+    [(- x1 x2)  (- y1 y2)]
   )
 
 (defn scale-vec [[x y] s]
   ;; COMPLETE
+    [(* x s)  (* y s)]
+
   )
 
+;; 返回一个坐标映射函数，其中 0 <= x, y <= 1
+;; 结果是frame中的一个点
 (defn frame-coord-map
   [{:keys [origin e1 e2]}]
   (fn [[x y]]
@@ -38,6 +44,7 @@
              (add-vec (scale-vec e1 x)
                       (scale-vec e2 y)))))
 
+;;绘制frame
 (defn frame-painter [{:keys [origin e1 e2]}]
   (let [corner (add-vec origin (add-vec e1 e2))]
     (draw-line origin (add-vec origin e1))
@@ -45,12 +52,14 @@
     (draw-line (add-vec origin e2) corner)
     (draw-line (add-vec origin e1) corner)))
 
+;;返回一个函数，在frame中顺序绘制segment-list中的线
 (defn segment-painter [segment-list]
   (fn [frame]
     (let [m (frame-coord-map frame)]
       (doseq [[start end] segment-list]
         (draw-line (m start) (m end))))))
 
+;;
 (defn transform-picture [p origin e1 e2]
   (fn [frame]
     (let [map (frame-coord-map frame)
@@ -59,15 +68,20 @@
           :e1 (sub-vec (map e1) new-origin)
           :e2 (sub-vec (map e2) new-origin)}))))
 
+;;水平翻转
 (defn flip-vert [p]
   (transform-picture p [0 1] [1 1] [0 0]))
 
+;;竖直翻转
 (defn flip-horiz [p]
   ;; COMPLETE (Ex 2.50)
+  (transform-picture p [1 0] [0 0] [1 1])
   )
 
+;;顺时针旋转90度
 (defn rotate [p]
   ;; COMPLETE
+  (transform-picture p [0 1] [0 0] [1 1])
   )
 
 (defn rotate180 [p]
@@ -76,6 +90,7 @@
 (defn rotate270 [p]
   (rotate (rotate (rotate p))))
 
+;;绘制左右两个相同的frame
 (defn beside [p1 p2]
   (let [split [0.5 0]
         left (transform-picture p1 [0 0] split [0 1])
@@ -84,12 +99,20 @@
       (left frame)
       (right frame))))
 
+;;绘制上下两个相同的frame
 (defn above [p1 p2]
   ; COMPLETE (Ex 2.51)
+    (let [split [0 0.5]
+         top (transform-picture p1 split [0 1] [1 0.5])
+         bottom (transform-picture p2 [0 0] split [1 0])]
+     (fn [frame]
+       (top frame)
+       (bottom frame)))
   )
 
 (defn path [& veclist]
   ; COMPLETE
+  ((segment-painter frame2) veclist)
   )
 
 
@@ -159,7 +182,7 @@
         }]
     (let [width (.width img)
           height (.height img)]
-      ; COMPLETE
+      ; COMPLETE  
       )))
 
 (def diag (segment-painter [[[0 0] [1 1]]]))
@@ -169,10 +192,11 @@
         bruce (image-painter (q/load-image "data/bruce.jpg"))
         angels (image-painter (q/load-image "data/angels.jpg"))]
     (q/background 255)
-    ;; (frame-painter frame1)
+    (frame-painter frame1) 
+    (frame-painter frame2)
     ;; (draw x)
     ;; (draw box)
-    ;; (george frame2)
+    ;;(george frame2)
     ;; (draw (rotate george))
     ;; (draw (flip-horiz george))
     ;; (draw (beside box box))
@@ -187,8 +211,8 @@
     ;;        george))
 
     ; Needs image-painter
-    ;; (bruce frame1)
-    ;; (bruce frame2)
+    (bruce frame1)
+    (bruce frame2)
     ;; (draw (beside george bruce))
     ;; (draw (corner-split bruce 4))
     ;; (draw (square-limit bruce 3))
