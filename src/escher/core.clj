@@ -112,10 +112,14 @@
 
 (defn path [& veclist]
   ; COMPLETE
-  ((segment-painter frame2) veclist)
+  (fn [frame]
+    (let [m (frame-coord-map frame)]
+        (doseq [[start end] veclist]
+        (draw-line (m start) (m end)))))
+
   )
 
-
+;;绘制四等分图片
 (defn quartet [p1 p2 p3 p4]
   (above (beside p1 p2)
          (beside p3 p4)))
@@ -134,8 +138,13 @@
     (let [smaller (right-split p (dec n))]
       (beside p (above smaller smaller)))))
 
+;;上下划分
 (defn up-split [p n]
   ;; COMPLETE (Ex 2.44)
+  (if (= n 0)
+    p 
+    (let [smaller (up-split p (dec n))]
+      (above p (beside smaller smaller))))
   )
 
 
@@ -145,6 +154,12 @@
     (def right-split (split beside above))
     (def up-split (split above beside)
   and replace the existing *-split fns"
+  (fn split-helper [p n]
+    (if (= n 0)
+      p
+      (let [smaller (split-helper p (dec n))]
+        (f p (g smaller smaller))))
+    ) 
   )
 
 (defn corner-split [p n]
@@ -167,13 +182,47 @@
   (combine-four (corner-split p n)))
 
 ; Ex2.49, Make these shapes with segment-painter/path
-(def box )
-(def x)
-(def diamond)
-(def george)
+(def box (segment-painter [[[0 0] [0 1]]
+                           [[0 1] [1 1]]
+                           [[1 1] [1 0]]
+                           [[1 0] [0 0]]]))
+(def x (segment-painter [[[0 0] [1 1]] 
+                         [[0 1] [1 0]]]))
+
+(def diamond (segment-painter [[[0.0 0.5] [0.5 1.0]] 
+                               [[0.5 1.0] [1.0 0.5]]
+                               [[1.0 0.5] [0.5 0.0]]
+                               [[0.5 0.0] [0.0 0.5]]]))
+
+(def george (segment-painter [
+                              [[0.25 0] [0.35 0.5]]
+                              [[0.35 0.5] [0.3 0.6]]
+                              [[0.3 0.6] [0.15 0.4]]
+                              [[0.15 0.4] [0 0.65]]
+                              [[0 0.65] [0 0.85]]
+                              [[0 0.85] [0.15 0.6]]
+                              [[0.15 0.6] [0.3 0.65]]
+                              [[0.3 0.65] [0.4 0.65]]
+                              [[0.4 0.65] [0.35 0.85]]
+                              [[0.35 0.85] [0.4 1]]
+                              [[0.4 1] [0.6 1]]
+                              [[0.6 1] [0.65 0.85]]
+                              [[0.65 0.85] [0.6 0.65]]
+                              [[0.6 0.65] [0.75 0.65]]
+                              [[0.75 0.65] [1 0.35]]
+                              [[1 0.35] [1 0.15]]
+                              [[1 0.15] [0.6 0.45]]
+                              [[0.6 0.45] [0.75 0]]
+                              [[0.75 0] [0.6 0]]
+                              [[0.6 0] [0.5 0.3]]
+                              [[0.5 0.3] [0.4 0]]
+                              [[0.4 0] [0.25 0]]
+                              ]))
 
 (defn draw [picture]
   (picture whole-window))
+
+
 
 (defn image-painter [img]
   (fn [{[ox oy] :origin
@@ -183,6 +232,7 @@
     (let [width (.width img)
           height (.height img)]
       ; COMPLETE  
+      (q/image img ox oy)
       )))
 
 (def diag (segment-painter [[[0 0] [1 1]]]))
@@ -192,27 +242,27 @@
         bruce (image-painter (q/load-image "data/bruce.jpg"))
         angels (image-painter (q/load-image "data/angels.jpg"))]
     (q/background 255)
-    (frame-painter frame1) 
-    (frame-painter frame2)
+    ;; (frame-painter frame1) 
+    ;; (frame-painter frame2)
     ;; (draw x)
-    ;; (draw box)
-    ;;(george frame2)
-    ;; (draw (rotate george))
-    ;; (draw (flip-horiz george))
-    ;; (draw (beside box box))
-    ;; (draw (combine-four george))
+    ;; (draw diamond) 
+    ;; (george frame2)
+    ;;  (draw (rotate george))
+    ;;  (draw (flip-horiz george))
+    ;;(draw (beside box box))
+    ;;(draw (combine-four george))
     ;; (draw (beside (above george george)
-    ;;               (flip-horiz (above george george))))
+    ;;                (flip-horiz (above george george))))
     ;; (draw (above (beside george (flip-horiz george))
     ;;              (beside george (flip-horiz george))))
 
-    ;; (draw ((square-of-four identity flip-vert
-    ;;                        flip-horiz rotate)
-    ;;        george))
+    (draw ((square-of-four identity flip-vert
+                           flip-horiz rotate)
+           george))
 
     ; Needs image-painter
-    (bruce frame1)
-    (bruce frame2)
+    ;;(bruce frame1)
+    ;;(bruce frame2)
     ;; (draw (beside george bruce))
     ;; (draw (corner-split bruce 4))
     ;; (draw (square-limit bruce 3))
